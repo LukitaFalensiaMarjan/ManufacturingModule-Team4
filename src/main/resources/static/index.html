@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manufacturing Command Center</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1', // Indigo
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Fade In Animation */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Toast Notification Animation */
+        .toast-enter { transform: translateX(100%); opacity: 0; }
+        .toast-enter-active { transform: translateX(0); opacity: 1; transition: all 0.3s ease-out; }
+        .toast-exit { transform: translateX(100%); opacity: 0; transition: all 0.3s ease-in; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900">
+
+<nav class="bg-slate-900 text-white sticky top-0 z-50 backdrop-blur-md bg-opacity-90 border-b border-slate-700 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <div class="flex items-center gap-4">
+                <div>
+                    <h1 class="font-bold text-xl tracking-tight leading-none">TEAM<span class="text-brand-400">4</span></h1>
+                    <span class="text-xs text-slate-400 font-medium tracking-wide uppercase">Manufacturing Module</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex flex-col items-end mr-2">
+                    <span class="text-xs text-slate-400">Database Status</span>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                        PostgreSQL Active
+                    </div>
+                </div>
+                <button class="bg-slate-800 hover:bg-slate-700 text-slate-200 p-2 rounded-lg transition border border-slate-700">
+                    <i class="fa-solid fa-bell"></i>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-400 to-purple-500 border-2 border-slate-800"></div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 fade-in">
+
+    <div class="mb-10 flex justify-between items-end">
+        <div>
+            <h2 class="text-3xl font-bold text-slate-900">Dashboard Overview</h2>
+            <p class="text-slate-500 mt-1">Real-time production monitoring and inventory control.</p>
+        </div>
+        <div class="hidden sm:block">
+                <span class="text-sm font-medium text-slate-500 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-brand-500"></i>
+                    <span id="realtime-clock" class="font-mono text-slate-600 tracking-tight">Initializing...</span>
+                </span>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-32 h-32 bg-brand-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+            <div class="relative">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Total Inventory</p>
+                        <h3 class="text-4xl font-bold text-slate-800 mt-2" id="total-items">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-cubes"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-green-600 font-medium">
+                    <i class="fa-solid fa-arrow-trend-up mr-1"></i> Stock Healthy
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+            <div class="relative">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Active Work Orders</p>
+                        <h3 class="text-4xl font-bold text-slate-800 mt-2" id="active-wo">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-gears"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-amber-600 font-medium">
+                    <i class="fa-regular fa-clock mr-1"></i> Production Floor
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-lg transition-shadow duration-300 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-32 h-32 bg-emerald-50 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
+            <div class="relative">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Completed Jobs</p>
+                        <h3 class="text-4xl font-bold text-slate-800 mt-2" id="completed-wo">0</h3>
+                    </div>
+                    <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                </div>
+                <div class="mt-4 flex items-center text-sm text-slate-400 font-medium">
+                    Lifetime total
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <div class="lg:col-span-4 space-y-8">
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800">New Production Order</h3>
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i>
+                </div>
+                <div class="p-6">
+                    <form id="create-wo-form" class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Select Finished Good</label>
+                            <div class="relative">
+                                <select id="wo-product-select" class="block w-full rounded-lg border-slate-300 bg-slate-50 p-3 text-sm focus:border-brand-500 focus:ring-brand-500 shadow-sm transition outline-none">
+                                    <option>Fetching items...</option>
+                                </select>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                    <i class="fa-solid fa-chevron-down text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 uppercase mb-2">Quantity</label>
+                            <input type="number" id="wo-quantity" value="1" min="1" class="block w-full rounded-lg border-slate-300 bg-slate-50 p-3 text-sm focus:border-brand-500 focus:ring-brand-500 shadow-sm outline-none transition">
+                        </div>
+                        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-0.5 active:scale-95 flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Release Work Order
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800">Inventory Items</h3>
+                    <button onclick="fetchItems()" class="text-slate-400 hover:text-brand-600 transition"><i class="fa-solid fa-rotate"></i></button>
+                </div>
+                <div class="max-h-[400px] overflow-y-auto">
+                    <ul class="divide-y divide-slate-100" id="items-list-container">
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-8">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[600px] flex flex-col">
+                <div class="px-8 py-5 border-b border-slate-200 flex justify-between items-center bg-white">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800">Production Control</h3>
+                        <p class="text-sm text-slate-500">Manage lifecycle of manufacturing orders</p>
+                    </div>
+                    <button onclick="fetchWorkOrders()" class="bg-slate-50 hover:bg-white text-slate-600 border border-slate-200 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition hover:shadow-md">
+                        <i class="fa-solid fa-rotate mr-2"></i> Refresh Data
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto flex-grow">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-semibold tracking-wider">
+                            <th class="px-8 py-4">WO Number</th>
+                            <th class="px-6 py-4">Product Details</th>
+                            <th class="px-6 py-4 text-center">Qty</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            <th class="px-8 py-4 text-right">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody id="wo-table-body" class="divide-y divide-slate-100 text-sm">
+                        </tbody>
+                    </table>
+
+                    <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+                        <div class="bg-slate-50 p-6 rounded-full mb-4">
+                            <i class="fa-solid fa-clipboard-list text-4xl text-slate-300"></i>
+                        </div>
+                        <h4 class="text-slate-800 font-medium text-lg">No Active Orders</h4>
+                        <p class="text-slate-500">Create a new work order to get started.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3"></div>
+
+<script>
+    const API_BASE = 'http://localhost:8081/api';
+
+    // --- Utils: Toast Notification (No more alerts!) ---
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+
+        // Styles based on type
+        const styles = type === 'success'
+            ? 'bg-white border-l-4 border-emerald-500 text-slate-800'
+            : 'bg-white border-l-4 border-rose-500 text-slate-800';
+
+        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-exclamation text-rose-500"></i>';
+
+        toast.className = `toast-enter p-4 rounded shadow-lg flex items-center gap-3 min-w-[300px] ${styles}`;
+        toast.innerHTML = `
+            <div class="text-lg">${icon}</div>
+            <div>
+                <p class="font-medium text-sm">${type === 'success' ? 'Success' : 'Error'}</p>
+                <p class="text-xs text-slate-500">${message}</p>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Animate In
+        requestAnimationFrame(() => {
+            toast.classList.remove('toast-enter');
+            toast.classList.add('toast-enter-active');
+        });
+
+        // Remove after 3s
+        setTimeout(() => {
+            toast.classList.remove('toast-enter-active');
+            toast.classList.add('toast-exit');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // --- On Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchItems();
+            fetchWorkOrders();
+            initRealtimeClock(); // <-- Panggil fungsi jam di sini
+        });
+
+        // --- Realtime Clock Logic ---
+        function initRealtimeClock() {
+            const clockElement = document.getElementById('realtime-clock');
+
+            const updateClock = () => {
+                const now = new Date();
+
+                // Format Tanggal: Thu, Dec 4, 2025
+                const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                const dateString = now.toLocaleDateString('en-US', dateOptions);
+
+                // Format Jam: 14:30:45
+                const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+
+                // Gabungkan
+                clockElement.innerText = `${dateString} • ${timeString}`;
+            };
+
+            updateClock(); // Jalan pertama kali
+            setInterval(updateClock, 1000); // Update setiap 1 detik
+        }
+
+    // --- Fetch Items ---
+    async function fetchItems() {
+        try {
+            const res = await fetch(`${API_BASE}/items`);
+            const items = await res.json();
+
+            // DOM Targets
+            const listContainer = document.getElementById('items-list-container');
+            const select = document.getElementById('wo-product-select');
+
+            // Clear content
+            listContainer.innerHTML = '';
+            select.innerHTML = '';
+            document.getElementById('total-items').innerText = items.length;
+
+            // Render
+            items.forEach(item => {
+                // Type Badge Style
+                const isRaw = item.type === 'RAW_MATERIAL';
+                const badgeClass = isRaw
+                    ? 'bg-slate-100 text-slate-600'
+                    : 'bg-purple-100 text-purple-700';
+                const icon = isRaw ? 'fa-box-open' : 'fa-couch';
+
+                // 1. Populate List Sidebar
+                listContainer.innerHTML += `
+                    <li class="px-6 py-4 hover:bg-slate-50 transition group">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:shadow-sm transition">
+                                    <i class="fa-solid ${icon} text-xs"></i>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-800">${item.name}</p>
+                                    <p class="text-xs text-slate-400 font-mono">${item.sku}</p>
+                                </div>
+                            </div>
+                            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide ${badgeClass}">${isRaw ? 'Raw' : 'Finish'}</span>
+                        </div>
+                    </li>
+                `;
+
+                // 2. Populate Dropdown (Finished Goods Only)
+                if (!isRaw) {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.text = `${item.name} (${item.sku})`;
+                    select.appendChild(option);
+                }
+            });
+
+        } catch (err) {
+            console.error("Error fetching items:", err);
+            showToast("Failed to load inventory data", "error");
+        }
+    }
+
+    // --- Fetch Work Orders ---
+    async function fetchWorkOrders() {
+        try {
+            const res = await fetch(`${API_BASE}/work-orders`);
+            const orders = await res.json();
+
+            const tbody = document.getElementById('wo-table-body');
+            const emptyState = document.getElementById('empty-state');
+
+            tbody.innerHTML = '';
+            let activeCount = 0;
+            let completedCount = 0;
+
+            if (orders.length === 0) {
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+            } else {
+                emptyState.classList.add('hidden');
+                emptyState.classList.remove('flex');
+            }
+
+            orders.forEach(wo => {
+                if (wo.status === 'COMPLETED') completedCount++;
+                else activeCount++;
+
+                // Status Logic: Color & Button
+                let statusBadge = '';
+                let actionBtn = '';
+                let rowClass = 'hover:bg-slate-50 transition duration-150';
+
+                if (wo.status === 'PENDING') {
+                    statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span> Pending</span>`;
+                    actionBtn = `
+                        <button onclick="updateStatus('${wo.id}', 'start')" class="group flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md shadow-brand-500/20 transition-all transform hover:-translate-y-0.5">
+                            Start <i class="fa-solid fa-play text-[10px] group-hover:ml-1 transition-all"></i>
+                        </button>`;
+                } else if (wo.status === 'IN_PROGRESS') {
+                    statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600 border border-blue-200"><i class="fa-solid fa-spinner fa-spin"></i> In Progress</span>`;
+                    rowClass = 'bg-blue-50/30 hover:bg-blue-50/60 transition duration-150';
+                    actionBtn = `
+                        <button onclick="updateStatus('${wo.id}', 'complete')" class="group flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5">
+                            Complete <i class="fa-solid fa-check text-[10px] group-hover:ml-1 transition-all"></i>
+                        </button>`;
+                } else if (wo.status === 'COMPLETED') {
+                    statusBadge = `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 border border-slate-200">Completed</span>`;
+                    rowClass = 'opacity-75 hover:opacity-100 transition';
+                    actionBtn = `<span class="text-slate-400 text-xs italic">Archived</span>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass} border-b border-slate-50 last:border-none">
+                        <td class="px-8 py-4 font-mono text-slate-500 text-xs">${wo.workOrderNumber}</td>
+                        <td class="px-6 py-4">
+                            <p class="font-bold text-slate-800 text-sm">${wo.itemName || 'Unknown Item'}</p>
+                        </td>
+                        <td class="px-6 py-4 text-center font-medium text-slate-700">${wo.quantityToProduce}</td>
+                        <td class="px-6 py-4 text-center">${statusBadge}</td>
+                        <td class="px-8 py-4 text-right flex justify-end items-center">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+
+            // Update Stat Cards
+            // Simple animation for numbers
+            animateValue("active-wo", parseInt(document.getElementById("active-wo").innerText), activeCount, 1000);
+            animateValue("completed-wo", parseInt(document.getElementById("completed-wo").innerText), completedCount, 1000);
+
+        } catch (err) {
+            console.error("Error fetching WOs:", err);
+            showToast("Connection Error with API", "error");
+        }
+    }
+
+    // --- Action: Update Status ---
+    async function updateStatus(id, action) {
+        try {
+            const res = await fetch(`${API_BASE}/work-orders/${id}/${action}`, { method: 'POST' });
+            if (res.ok) {
+                showToast(`Work Order successfully ${action === 'start' ? 'started' : 'completed'}!`);
+                fetchWorkOrders(); // Refresh table
+            } else {
+                const err = await res.json();
+                showToast(err.error || "Action failed", "error");
+            }
+        } catch (err) {
+            showToast("Network Error", "error");
+        }
+    }
+
+    // --- Action: Create WO ---
+    document.getElementById('create-wo-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button');
+        const originalText = btn.innerHTML;
+
+        // Loading State
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+
+        const itemId = document.getElementById('wo-product-select').value;
+        const qty = document.getElementById('wo-quantity').value;
+
+        try {
+            const res = await fetch(`${API_BASE}/work-orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemId: itemId, quantity: parseInt(qty) })
+            });
+
+            if (res.ok) {
+                showToast("New Work Order created successfully!");
+                fetchWorkOrders();
+                document.getElementById('wo-quantity').value = 1; // Reset
+            } else {
+                const err = await res.json();
+                showToast(err.error || "Failed to create order", "error");
+            }
+        } catch (err) {
+            showToast("Network Error", "error");
+        } finally {
+            // Restore Button
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    });
+
+    // --- Helper: Number Animation ---
+    function animateValue(id, start, end, duration) {
+        if (start === end) return;
+        const range = end - start;
+        let current = start;
+        const increment = end > start ? 1 : -1;
+        const stepTime = Math.abs(Math.floor(duration / range));
+        const obj = document.getElementById(id);
+        const timer = setInterval(function() {
+            current += increment;
+            obj.innerHTML = current;
+            if (current == end) {
+                clearInterval(timer);
+            }
+        }, stepTime);
+    }
+</script>
+</body>
+</html>
